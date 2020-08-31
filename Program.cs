@@ -21,16 +21,16 @@ namespace SocialSecurityNumber
 
             Console.Clear();
 
-
+            
             //get date part of Social Security Number by removing the last 5 
             string birthDateString = socialSecurityNumber.Substring(0, socialSecurityNumber.Length - 5);
 
-
-            bool isFemale = int.Parse(socialSecurityNumber.Substring(9, 1)) % 2 == 0;
-
+            bool isFemale = socialSecurityNumber.Length == 11 ? (int.Parse(socialSecurityNumber.Substring(9, 1)) % 2 == 0) : (int.Parse(socialSecurityNumber.Substring(11, 1)) % 2 == 0);
+            //bool isFemale = int.Parse(socialSecurityNumber.Substring(9, 1)) % 2 == 0;
+            string generation = "";
             // Write:[SSN] is a [Age] year old [Sex] ([Verification])
             Console.WriteLine(
-                $"{socialSecurityNumber} is a {CalculateAge(birthDateString)} year old {(isFemale ? "female" : "male")}{(VerifySocialSecurityControlNumber(socialSecurityNumber) ? "" : " and is not a real person")}");
+                $"{socialSecurityNumber} is a {CalculateAge(birthDateString, out generation)} year old {(isFemale ? "female" : "male")} belonging to {generation}{(VerifySocialSecurityControlNumber(socialSecurityNumber) ? "" : " and is not a real person")}");
         }
 
 
@@ -67,7 +67,7 @@ namespace SocialSecurityNumber
         /// </summary>
         /// <param name="socialSecurityNumber">A birth date with the format (yyMMdd) or (yyyyMMdd)</param>
         /// <returns>The persons current age</returns>
-        protected static int CalculateAge(string socialSecurityNumber)
+        protected static int CalculateAge(string socialSecurityNumber, out string generation)
         {
             int age;
             DateTime birthDate = socialSecurityNumber.Length == 6 ? DateTime.ParseExact(socialSecurityNumber, "yyMMdd", CultureInfo.InvariantCulture) : DateTime.ParseExact(socialSecurityNumber, "yyyyMMdd", CultureInfo.InvariantCulture);
@@ -80,6 +80,24 @@ namespace SocialSecurityNumber
             {
                 age--;
             }
+
+            //add generation to age
+            if (birthDate.Year < 1925)
+                generation = "The Greatest Generation";
+            else if (birthDate.Year < 1946)
+                generation = "The Silent Generation";
+            else if (birthDate.Year < 1965)
+                generation = "Baby Boomer Generation";
+            else if (birthDate.Year < 1981)
+                generation = "Gen X";
+            else if (birthDate.Year < 1995)
+                generation = "Millenials";
+            else if (birthDate.Year < 2013)
+                generation = "Gen Z";
+            else if (birthDate.Year < 2026)
+                generation = "Gen Alpha";
+            else
+                generation = "Unnamed future generation";
 
             return age;
         }
