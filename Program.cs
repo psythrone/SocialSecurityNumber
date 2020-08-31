@@ -7,14 +7,23 @@ namespace SocialSecurityNumber
     {
         static void Main(string[] args)
         {
-            Console.Write("Please enter a Social security number (YYMMDD-XXXX): ");
-            string socialSecurityNumber = Console.ReadLine();
+            string socialSecurityNumber;
+
+            if (args.Length == 0)
+            {
+                Console.Write("Please enter a Social security number (YYMMDD-XXXX): ");
+                socialSecurityNumber = Console.ReadLine();
+            }
+            else
+            {
+                socialSecurityNumber = args[0];
+            }
 
             Console.Clear();
 
 
             //get date part of Social Security Number by removing the last 5 
-            string birthDateString = socialSecurityNumber.Substring(0, socialSecurityNumber.Length - 6);
+            string birthDateString = socialSecurityNumber.Substring(0, socialSecurityNumber.Length - 5);
 
 
             bool isFemale = int.Parse(socialSecurityNumber.Substring(9, 1)) % 2 == 0;
