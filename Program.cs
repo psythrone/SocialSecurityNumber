@@ -7,48 +7,58 @@ namespace SocialSecurityNumber
     {
         static void Main(string[] args)
         {
+            Console.Write("Please enter your First name: ");
+            string firstName = Console.ReadLine();
+
+            Console.Write("Please enter your Last name: ");
+            string lastName = Console.ReadLine();
+
             string socialSecurityNumber;
 
-            if (args.Length == 0)
+            if (!(args.Length == 0))
+            {
+                socialSecurityNumber = args[0];
+            }
+            else
             {
                 Console.Write("Please enter a Social security number (YYMMDD-XXXX): ");
                 socialSecurityNumber = Console.ReadLine();
             }
-            else
-            {
-                socialSecurityNumber = args[0];
-            }
-
             Console.Clear();
 
-            
-            //get date part of Social Security Number by removing the last 5 
+            // get date part of Social Security Number by removing the last 5 
             string birthDateString = socialSecurityNumber.Substring(0, socialSecurityNumber.Length - 5);
 
-            bool isFemale = socialSecurityNumber.Length == 11 ? (int.Parse(socialSecurityNumber.Substring(9, 1)) % 2 == 0) : (int.Parse(socialSecurityNumber.Substring(11, 1)) % 2 == 0);
-            
-            // Write:[SSN] is a [Age] year old [Sex] ([Verification])
-            Console.WriteLine(
-                $"{socialSecurityNumber} is a {CalculateAge(birthDateString, out string generation)} year old {(isFemale ? "female" : "male")} belonging to {generation}{(VerifySocialSecurityControlNumber(socialSecurityNumber) ? "" : " and is not a real person")}");
-        }
+            // check the second to last number for sex i.e. even for female, odd for male
+            bool isFemale = int.Parse(socialSecurityNumber.Substring(socialSecurityNumber.Length - 2, 1)) % 2 == 0;
 
+            Console.WriteLine($"Name: {firstName} {lastName}\nSocial Security Number: {socialSecurityNumber}\nGender: {(isFemale ? "Female" : "Male")}\nAge: {CalculateAge(birthDateString, out string generation)}\nGeneration: {generation}{(VerifySocialSecurityControlNumber(socialSecurityNumber) ? "" : "\nVerification digit is invalid!")}");
+        }
+        /**
+         * Name:                   
+         * Social Security Number: 
+         * Gender:                 
+         * Age:                    
+         * Generation:             
+         * [VERIFICATION]
+         */
 
         /// <summary>
         /// Calculates a persons current age given their birth date
         /// </summary>
-        /// <param name="socialSecurityNumber">A birth date using format (yyMMdd) or (yyyyMMdd)</param>
+        /// <param name="birthDateString">A birth date using format (yyMMdd) or (yyyyMMdd)</param>
         /// <param name="generation">Out parameter containing the persons generation</param>
         /// <returns>The persons age</returns>
-        protected static int CalculateAge(string socialSecurityNumber, out string generation)
+        protected static int CalculateAge(string birthDateString, out string generation)
         {
             int age;
-            DateTime birthDate = socialSecurityNumber.Length == 6 ? DateTime.ParseExact(socialSecurityNumber, "yyMMdd", CultureInfo.InvariantCulture) : DateTime.ParseExact(socialSecurityNumber, "yyyyMMdd", CultureInfo.InvariantCulture);
+            DateTime birthDate = birthDateString.Length == 6 ? DateTime.ParseExact(birthDateString, "yyMMdd", CultureInfo.InvariantCulture) : DateTime.ParseExact(birthDateString, "yyyyMMdd", CultureInfo.InvariantCulture);
 
             age = DateTime.Today.Year - birthDate.Year;
 
             //if the person hasn't had their birthday this year yet we reduce their age by one
-            if (birthDate.Month > DateTime.Today.Month
-                || birthDate.Month == DateTime.Today.Month && birthDate.Day > DateTime.Today.Day)
+            if (birthDate.Month > DateTime.Today.Month || 
+                birthDate.Month == DateTime.Today.Month && birthDate.Day > DateTime.Today.Day)
             {
                 age--;
             }
@@ -59,11 +69,11 @@ namespace SocialSecurityNumber
             else if (birthDate.Year < 1946)
                 generation = "The Silent Generation";
             else if (birthDate.Year < 1965)
-                generation = "Baby Boomer Generation";
-            else if (birthDate.Year < 1981)
+                generation = "Baby Boomer";
+            else if (birthDate.Year < 1980)
                 generation = "Gen X";
             else if (birthDate.Year < 1995)
-                generation = "Millenials";
+                generation = "Millenial";
             else if (birthDate.Year < 2013)
                 generation = "Gen Z";
             else if (birthDate.Year < 2026)
@@ -93,15 +103,19 @@ namespace SocialSecurityNumber
             // Calculate verification digit
             for (int i = 1; i < 10; i++)
             {
+                // multiply each digit alternatingly with 2 and 1 i.e. first digit gets doubled, second gets left alone, third gets doubled and so on
                 int digit = int.Parse(socialSecurityNumber.Substring(i - 1, 1)) * ((i % 2) + 1);
+                // if the result is 10 or greater, we add the component digits to each other i.e. 14 -> 1 + 4 = 5 
                 if (digit > 9)
                 {
                     int n = digit % 10;
                     digit = (digit / 10) + n;
                 }
+                // add all the digits together
                 accumulation += digit;
             }
-            int socialSecturityControlNumber = (10 + ((accumulation / 10) * 10)) - accumulation;
+            // the final step in calculating the control number is that we take the next highest multiple of 10 and remove our calculated number from it i.e. if we got 44 we do 50 - 44 = 6 (effectivly 10 - (accumulation%10))
+            int socialSecturityControlNumber = ((10 + ((accumulation / 10) * 10)) - accumulation) % 10;
 
             return socialSecturityControlNumber == int.Parse(socialSecurityNumber.Substring(socialSecurityNumber.Length - 1));
         }
