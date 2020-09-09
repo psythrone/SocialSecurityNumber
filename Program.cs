@@ -27,7 +27,9 @@ namespace SocialSecurityNumber
             Console.Clear();
 
             // get date part of Social Security Number by removing the last 5 
-            string birthDateString = socialSecurityNumber.Substring(0, socialSecurityNumber.Length - 5);
+            //string birthDateString = socialSecurityNumber.Substring(0, socialSecurityNumber.Length - 5);
+            // VS told me to try this instead of substring
+            string birthDateString = socialSecurityNumber[0..^5];
 
             // check the second to last number for sex i.e. even for female, odd for male
             bool isFemale = int.Parse(socialSecurityNumber.Substring(socialSecurityNumber.Length - 2, 1)) % 2 == 0;
