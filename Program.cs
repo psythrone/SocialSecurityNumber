@@ -33,8 +33,20 @@ namespace SocialSecurityNumber
 
             // check the second to last number for sex i.e. even for female, odd for male
             bool isFemale = int.Parse(socialSecurityNumber.Substring(socialSecurityNumber.Length - 2, 1)) % 2 == 0;
+            Gender gender = GetGender(socialSecurityNumber);
 
-            Console.WriteLine($"Name: {firstName} {lastName}\nSocial Security Number: {socialSecurityNumber}\nGender: {(isFemale ? "Female" : "Male")}\nAge: {CalculateAge(birthDateString, out string generation)}\nGeneration: {generation}{(VerifySocialSecurityControlNumber(socialSecurityNumber) ? "" : "\nVerification digit is invalid!")}");
+
+            Console.WriteLine($"Name:                   {firstName} {lastName}");
+            Console.WriteLine($"Social Security Number: {socialSecurityNumber}");
+            Console.WriteLine($"Gender:                 {gender}");
+            Console.WriteLine($"Age:                    {CalculateAge(birthDateString, out Generation generation)}");
+            Console.WriteLine($"Generation:             {generation.ToString().Replace('_', ' ')}");
+            if (!VerifySocialSecurityControlNumber(socialSecurityNumber))
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("\nVerification digit is invalid!");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
         }
         /**
          * Name:                   
@@ -51,7 +63,7 @@ namespace SocialSecurityNumber
         /// <param name="birthDateString">A birth date using format (yyMMdd) or (yyyyMMdd)</param>
         /// <param name="generation">Out parameter containing the persons generation</param>
         /// <returns>The persons age</returns>
-        protected static int CalculateAge(string birthDateString, out string generation)
+        private static int CalculateAge(string birthDateString, out Generation generation)
         {
             int age;
             DateTime birthDate = birthDateString.Length == 6 ? DateTime.ParseExact(birthDateString, "yyMMdd", CultureInfo.InvariantCulture) : DateTime.ParseExact(birthDateString, "yyyyMMdd", CultureInfo.InvariantCulture);
@@ -59,7 +71,7 @@ namespace SocialSecurityNumber
             age = DateTime.Today.Year - birthDate.Year;
 
             //if the person hasn't had their birthday this year yet we reduce their age by one
-            if (birthDate.Month > DateTime.Today.Month || 
+            if (birthDate.Month > DateTime.Today.Month ||
                 birthDate.Month == DateTime.Today.Month && birthDate.Day > DateTime.Today.Day)
             {
                 age--;
@@ -67,21 +79,21 @@ namespace SocialSecurityNumber
 
             //add generation to age
             if (birthDate.Year < 1925)
-                generation = "The Greatest Generation";
+                generation = Generation.The_Greatest_Generation;
             else if (birthDate.Year < 1946)
-                generation = "The Silent Generation";
+                generation = Generation.The_Silent_Generation;
             else if (birthDate.Year < 1965)
-                generation = "Baby Boomer";
+                generation = Generation.Baby_Boomer;
             else if (birthDate.Year < 1980)
-                generation = "Gen X";
+                generation = Generation.Gen_X;
             else if (birthDate.Year < 1995)
-                generation = "Millenial";
+                generation = Generation.Millenial;
             else if (birthDate.Year < 2013)
-                generation = "Gen Z";
-            else if (birthDate.Year < 2026)
-                generation = "Gen Alpha";
+                generation = Generation.Gen_Z;
             else
-                generation = "Unnamed future generation";
+                generation = Generation.Gen_Alpha;
+
+
 
             return age;
         }
@@ -92,7 +104,7 @@ namespace SocialSecurityNumber
         /// </summary>
         /// <param name="socialSecurityNumber">A Swedish Social Security Number with the format (YYMMDD-NNNN)</param>
         /// <returns>True if Social Security Verification digit is correct</returns>
-        protected static bool VerifySocialSecurityControlNumber(string socialSecurityNumber)
+        private static bool VerifySocialSecurityControlNumber(string socialSecurityNumber)
         {
             //Remove first two digits if format is yyyyMMdd-nnnn, format should be yyMMdd-nnnn
             if (socialSecurityNumber.Length == 13)
@@ -122,6 +134,28 @@ namespace SocialSecurityNumber
             return socialSecturityControlNumber == int.Parse(socialSecurityNumber.Substring(socialSecurityNumber.Length - 1));
         }
 
+        private static Gender GetGender(string socialSecurityNumber)
+        {
+            bool isFemale = int.Parse(socialSecurityNumber.Substring(socialSecurityNumber.Length - 2, 1)) % 2 == 0;
+
+            return isFemale ? Gender.Female : Gender.Male;
+        }
+
+        private enum Gender
+        {
+            Female, Male
+        }
+
+        private enum Generation
+        {
+            The_Greatest_Generation,
+            The_Silent_Generation,
+            Baby_Boomer,
+            Gen_X,
+            Millenial,
+            Gen_Z,
+            Gen_Alpha
+        }
     }
 }
 
