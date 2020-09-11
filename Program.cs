@@ -26,20 +26,14 @@ namespace SocialSecurityNumber
             }
             Console.Clear();
 
-            // get date part of Social Security Number by removing the last 5 
-            //string birthDateString = socialSecurityNumber.Substring(0, socialSecurityNumber.Length - 5);
-            // VS told me to try this instead of substring
-            string birthDateString = socialSecurityNumber[0..^5];
-
             // check the second to last number for sex i.e. even for female, odd for male
-            bool isFemale = int.Parse(socialSecurityNumber.Substring(socialSecurityNumber.Length - 2, 1)) % 2 == 0;
             Gender gender = GetGender(socialSecurityNumber);
-
+            int age = CalculateAge(socialSecurityNumber, out Generation generation);
 
             Console.WriteLine($"Name:                   {firstName} {lastName}");
             Console.WriteLine($"Social Security Number: {socialSecurityNumber}");
             Console.WriteLine($"Gender:                 {gender}");
-            Console.WriteLine($"Age:                    {CalculateAge(birthDateString, out Generation generation)}");
+            Console.WriteLine($"Age:                    {age}");
             Console.WriteLine($"Generation:             {generation.ToString().Replace('_', ' ')}");
             if (!VerifySocialSecurityControlNumber(socialSecurityNumber))
             {
@@ -60,13 +54,17 @@ namespace SocialSecurityNumber
         /// <summary>
         /// Calculates a persons current age given their birth date
         /// </summary>
-        /// <param name="birthDateString">A birth date using format (yyMMdd) or (yyyyMMdd)</param>
+        /// <param name="socialSecurityNumber">A birth date using format (yyMMdd) or (yyyyMMdd)</param>
         /// <param name="generation">Out parameter containing the persons generation</param>
         /// <returns>The persons age</returns>
-        private static int CalculateAge(string birthDateString, out Generation generation)
+        private static int CalculateAge(string socialSecurityNumber, out Generation generation)
         {
             int age;
-            DateTime birthDate = birthDateString.Length == 6 ? DateTime.ParseExact(birthDateString, "yyMMdd", CultureInfo.InvariantCulture) : DateTime.ParseExact(birthDateString, "yyyyMMdd", CultureInfo.InvariantCulture);
+
+
+            // VS told me to try this instead of substring(0, socialSecurityNumber.Length - 5)
+            socialSecurityNumber = socialSecurityNumber[0..^5];
+            DateTime birthDate = socialSecurityNumber.Length == 6 ? DateTime.ParseExact(socialSecurityNumber, "yyMMdd", CultureInfo.InvariantCulture) : DateTime.ParseExact(socialSecurityNumber, "yyyyMMdd", CultureInfo.InvariantCulture);
 
             age = DateTime.Today.Year - birthDate.Year;
 
